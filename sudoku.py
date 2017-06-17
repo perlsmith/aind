@@ -24,7 +24,8 @@ square_units = [ cross( r, c ) for r in ( 'ABC', 'DEF', 'GHI') for c in ('123', 
 
 unitlist = row_units + col_units + square_units
 
-puzzle = '..3.2.6..9..3.5..1..18.64....81.29..7.......8..67.82....26.95..8..2.3..9..5.1.3..'
+easy_puzzle = '..3.2.6..9..3.5..1..18.64....81.29..7.......8..67.82....26.95..8..2.3..9..5.1.3..'
+puzzle = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
 
 def eliminate( grid ) :
 
@@ -80,14 +81,48 @@ def reduce_puzzle(grid):
 		stalled = total_choices_before == total_choices_after
 		# Sanity check, return False if there is a box with zero available values:
 		if len([box for box in grid.keys() if len(grid[box]) == 0]):
+			pdb.set_trace()
 			return False
 	return grid
 
+def search( grid ):
+	"Using depth-first search and propagation, create a search tree and solve the sudoku."
+	# First, reduce the puzzle using the previous function
+	grid = reduce_puzzle( grid )	# we get something with one of the boxes set to a value - where previously
+									# r_p had provided options for that box (incomplete box)
+	# Choose one of the unfilled squares with the fewest possibilities
+	if 81 == len( ''.join(grid.values() ) )	:	# => fully solved already..
+		return grid
+	num = 2
+	have_candidates = False
+	while( not have_candidates ) :
+		box_candidates = [ box for box in boxes if num == len(grid[box]) ]
+		num = num + 1
+		if num > 9 :
+			sys.exit()
+		if 0 < len( box_candidates ) :
+			have_candidates = True
+	
+	for candidate in box_candidates :
+		for digit in grid[candidate] :
+			myGrid = grid
+			myGrid[ candidate ] = digit
+			myGrid = search( myGrid )		# here's the recursion
+			if myGrid :
+				if 81 == len( ''.join( myGrid.values() ) ) :
+					return myGrid
+			
+	return False
+	# Now use recursion to solve each one of the resulting sudokus, and if one returns a value (not False), return that answer!
+	
+	
 
 sudoku = grid_values( puzzle )
 su = eliminate( sudoku )
 su = only_choice( su )
+
+pdb.set_trace()	
+
+display( search( su ) )
 	
-display( reduce_puzzle( su ) )
-	
-pdb.set_trace()
+
