@@ -49,10 +49,45 @@ def eliminate( grid ) :
 						if not cell == box :
 							grid[cell] = re.sub( grid[box] , '' , grid[cell] )
 	return grid
-	
+
+def only_choice(grid):
+    """
+    Go through all the units, and whenever there is a unit with a value that only fits in one box, assign the value to this box.
+    Input: A sudoku in dictionary form.
+    Output: The resulting sudoku in dictionary form.
+    """
+    for unit in unitlist:
+        for digit in '123456789':
+            dplaces = [box for box in unit if digit in grid[box]]
+            if len(dplaces) == 1:
+                grid[dplaces[0]] = digit
+    return grid
+
+def reduce_puzzle(grid):
+	stalled = False
+	while not stalled:
+		# Check how many boxes have a determined value
+		total_choices_before = len( ''.join( grid.values() ) )
+
+		grid = eliminate( grid )
+		grid = only_choice( grid )
+
+		# Your code here: Use the Only Choice Strategy
+
+		# Check how many boxes have a determined value, to compare
+		total_choices_after = len( ''.join( grid.values() ) )
+		# If no new values were added, stop the loop.
+		stalled = total_choices_before == total_choices_after
+		# Sanity check, return False if there is a box with zero available values:
+		if len([box for box in grid.keys() if len(grid[box]) == 0]):
+			return False
+	return grid
+
+
 sudoku = grid_values( puzzle )
 su = eliminate( sudoku )
+su = only_choice( su )
 	
-display( eliminate( grid_values( puzzle ) ) )
+display( reduce_puzzle( su ) )
 	
 pdb.set_trace()
