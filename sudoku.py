@@ -49,6 +49,7 @@ def eliminate( grid ) :
 					for cell in unit :
 						if not cell == box :
 							grid[cell] = re.sub( grid[box] , '' , grid[cell] )
+			display( grid )
 	return grid
 
 def only_choice(grid):
@@ -81,14 +82,14 @@ def reduce_puzzle(grid):
 		stalled = total_choices_before == total_choices_after
 		# Sanity check, return False if there is a box with zero available values:
 		if len([box for box in grid.keys() if len(grid[box]) == 0]):
-			pdb.set_trace()
+			# pdb.set_trace()
 			return False
 	return grid
 
-def search( grid ):
+def search( igrid ):
 	"Using depth-first search and propagation, create a search tree and solve the sudoku."
 	# First, reduce the puzzle using the previous function
-	grid = reduce_puzzle( grid )	# we get something with one of the boxes set to a value - where previously
+	grid = reduce_puzzle( igrid )	# we get something with one of the boxes set to a value - where previously
 									# r_p had provided options for that box (incomplete box)
 	# Choose one of the unfilled squares with the fewest possibilities
 	if 81 == len( ''.join(grid.values() ) )	:	# => fully solved already..
@@ -107,6 +108,7 @@ def search( grid ):
 		for digit in grid[candidate] :
 			myGrid = grid
 			myGrid[ candidate ] = digit
+			print( candidate + " : " + digit )
 			myGrid = search( myGrid )		# here's the recursion
 			if myGrid :
 				if 81 == len( ''.join( myGrid.values() ) ) :
