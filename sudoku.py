@@ -27,7 +27,8 @@ unitlist = row_units + col_units + square_units
 easy_puzzle = '..3.2.6..9..3.5..1..18.64....81.29..7.......8..67.82....26.95..8..2.3..9..5.1.3..'
 puzzle = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
 
-def eliminate( grid ) :
+def eliminate( igrid ) :
+	grid = igrid
 
 	"""Eliminate values from peers of each box with a single value.
 
@@ -40,32 +41,32 @@ def eliminate( grid ) :
 	Resulting Sudoku in dictionary form after eliminating values.
 	"""
 
-	for box in boxes :
-		if 1 == len( grid[box] ) :	# then, need to hit the peers - all 20 of them...
-			# print( box )
-			for unit in unitlist :
-				if box in unit :
-					# pdb.set_trace()
-					for cell in unit :
-						if not cell == box :
-							grid[cell] = re.sub( grid[box] , '' , grid[cell] )
-			display( grid )
+	for box in [ x for x in boxes if 1== len( grid[x] ) ] :
+		# print( box )
+		for unit in unitlist :
+			if box in unit :
+				# pdb.set_trace()
+				for cell in unit :
+					if not cell == box :
+						grid[cell] = re.sub( grid[box] , '' , grid[cell] )
 	return grid
 
-def only_choice(grid):
-    """
-    Go through all the units, and whenever there is a unit with a value that only fits in one box, assign the value to this box.
-    Input: A sudoku in dictionary form.
-    Output: The resulting sudoku in dictionary form.
-    """
-    for unit in unitlist:
-        for digit in '123456789':
-            dplaces = [box for box in unit if digit in grid[box]]
-            if len(dplaces) == 1:
-                grid[dplaces[0]] = digit
-    return grid
+def only_choice(igrid):
+	grid = igrid
+	"""
+	Go through all the units, and whenever there is a unit with a value that only fits in one box, assign the value to this box.
+	Input: A sudoku in dictionary form.
+	Output: The resulting sudoku in dictionary form.
+	"""
+	for unit in unitlist:
+		for digit in '123456789':
+			dplaces = [box for box in unit if digit in grid[box]]
+			if len(dplaces) == 1:
+				grid[dplaces[0]] = digit
+	return grid
 
-def reduce_puzzle(grid):
+def reduce_puzzle(igrid):
+	grid = igrid
 	stalled = False
 	while not stalled:
 		# Check how many boxes have a determined value
@@ -86,14 +87,22 @@ def reduce_puzzle(grid):
 			return False
 	return grid
 
-def search( igrid ):
+def search( depth, igrid ):
 	"Using depth-first search and propagation, create a search tree and solve the sudoku."
 	# First, reduce the puzzle using the previous function
-	grid = reduce_puzzle( igrid )	# we get something with one of the boxes set to a value - where previously
-									# r_p had provided options for that box (incomplete box)
+	if igrid :
+		display( igrid )
+		grid = reduce_puzzle( igrid )	# we get something with one of the boxes set to a value - where previously
+										# r_p had provided options for that box (incomplete box)
+	if grid :
+		display( grid )
+	
 	# Choose one of the unfilled squares with the fewest possibilities
-	if 81 == len( ''.join(grid.values() ) )	:	# => fully solved already..
-		return grid
+	if grid :
+		if 81 == len( ''.join(grid.values() ) )	:	# => fully solved already..
+			return grid
+	else :
+		return False
 	num = 2
 	have_candidates = False
 	while( not have_candidates ) :
@@ -108,11 +117,10 @@ def search( igrid ):
 		for digit in grid[candidate] :
 			myGrid = grid
 			myGrid[ candidate ] = digit
-			print( candidate + " : " + digit )
-			myGrid = search( myGrid )		# here's the recursion
-			if myGrid :
-				if 81 == len( ''.join( myGrid.values() ) ) :
-					return myGrid
+			print( "depth : " + str( depth) + ", " + candidate + " : " + digit )
+			myGrid = search( depth+1, myGrid )		# here's the recursion
+			if myGrid and 81 == len( ''.join( myGrid.values() ) ) :
+				return myGrid
 			
 	return False
 	# Now use recursion to solve each one of the resulting sudokus, and if one returns a value (not False), return that answer!
@@ -124,7 +132,8 @@ su = eliminate( sudoku )
 su = only_choice( su )
 
 pdb.set_trace()	
+su = search( 0, su )
 
-display( search( su ) )
+display( su  )
 	
 
