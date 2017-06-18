@@ -88,11 +88,8 @@ def search( depth, igrid ):
 	"Using depth-first search and propagation, create a search tree and solve the sudoku."
 	# First, reduce the puzzle using the previous function
 	if igrid :
-#		display( igrid )
 		grid = reduce_puzzle( igrid )	# we get something with one of the boxes set to a value - where previously
 										# r_p had provided options for that box (incomplete box)
-#	if grid :
-#		display( grid )
 	
 	# Choose one of the unfilled squares with the fewest possibilities
 	if grid :
@@ -110,18 +107,37 @@ def search( depth, igrid ):
 		if 0 < len( box_candidates ) :
 			have_candidates = True
 
-	# Now use recursion to solve each one of the resulting sudokus, and if one returns a value (not False), return that answer!	
-	for candidate in box_candidates :
+	# # Now use recursion to solve each one of the resulting sudokus, and if one returns a value (not False), return that answer!	
+
+	# n,candidate = min((len(igrid[s]), s) for s in boxes if len(igrid[s]) > 1)
+	for candidate in box_candidates[:2] :
 		for digit in grid[candidate] :
 			myGrid = dict( grid )
 			myGrid[ candidate ] = digit
-			print( "depth : " + str( depth) + ", " + candidate + " : " + digit )
+			# print( "depth : " + str( depth) + ", " + candidate + " : " + digit )
 			myGrid = search( depth+1, myGrid )		# here's the recursion
 			if myGrid and 81 == len( ''.join( myGrid.values() ) ) :
 				return myGrid
-			
+				
 	return False
 	
+	# cheating :
+    # "Using depth-first search and propagation, try all possible values."
+    # First, reduce the puzzle using the previous function
+    # igrid = reduce_puzzle(igrid)
+    # # if igrid is False:
+        # # return False ## Failed earlier
+    # # if all(len(igrid[s]) == 1 for s in boxes): 
+        # # return igrid ## Solved!
+    # Choose one of the unfilled squares with the fewest possibilities
+	# n,s = min((len(igrid[s]), s) for s in boxes if len(igrid[s]) > 1)
+	# Now use recurrence to solve each one of the resulting sudokus, and 
+	# for value in igrid[s]:
+		# new_sudoku = igrid.copy()
+		# new_sudoku[s] = value
+		# attempt = search(0, new_sudoku)
+		# if attempt:
+			# return attempt	
 	
 
 sudoku = grid_values( puzzle )
